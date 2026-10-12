@@ -126,6 +126,11 @@ Rules that are easy to trip:
   the import of `snapshot_fetch.py`, `bootstrap_snapshot.py` and `submit.py` with a `KeyError`
   naming the type and the field. Copying `types/rfe/` keeps them; a third type must also pass
   `prefix=` explicitly to the snapshot helpers (their default is the rfe `snapshot.prefix`).
+- **Opt-in by label.** A type that production selects by label (the Initiative trial,
+  AISDLC-205) names the label as `conventions.labels.opt_in`; the autofixer's selection JQL
+  and any downstream intake read it with `python3 scripts/type_registry.py get <type>
+  conventions.labels.opt_in` rather than carrying their own copy. Leave the key out for a type
+  whose every item is in scope (rfe). No rfe-creator script reads it.
   `fetch_issue.py --fetch-all --type <t>` reads `dirs.{tasks,originals}`, `identity.id_field`
   and `companions.comments` (all schema-required), plus the effective
   `identity.jira.{project,issue_type}` it verifies the fetched issue against.
