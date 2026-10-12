@@ -233,6 +233,14 @@ class TestTemplateLanguage:
 
 
 class TestDerivedValues:
+    def test_config_path_without_eval_config_is_a_generate_error(self):
+        """The generator's own error type, naming the field, so validate_types and the CLI
+        report it instead of surfacing the registry's KeyError."""
+        with pytest.raises(gen.GenerateError, match="descriptor has no 'eval.config'"):
+            gen.config_path(_desc("initiative", mutate=lambda d: d["eval"].pop("config")))
+        with pytest.raises(gen.GenerateError, match="eval.config is unset"):
+            gen.config_path(_desc("rfe", mutate=lambda d: d["eval"].__setitem__("config", None)))
+
     def test_identity_projections(self):
         frag = _fragment()
         d = gen.derived_values(REG.get("rfe"), gen.flatten(frag))

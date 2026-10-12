@@ -118,9 +118,16 @@ def pairwise_path(desc):
 
 
 def config_path(desc, repo_root=None):
-    """Where the rendered config is committed: eval.config, repo-relative."""
+    """Where the rendered config is committed: eval.config, repo-relative.
+
+    A descriptor without the field (the schema requires it, but the generator and the
+    validator read it before or beside the schema check) is a ``GenerateError`` naming the
+    field, like every other descriptor read here — not a ``KeyError`` out of the registry.
+    """
     root = REPO_ROOT if repo_root is None else Path(repo_root)
-    rel = desc.get("eval.config")
+    rel = _desc_get(desc, "eval.config")
+    if not isinstance(rel, str) or not rel:
+        raise GenerateError(f"{desc.name}: eval.config is unset")
     return root / rel
 
 

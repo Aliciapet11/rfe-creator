@@ -523,7 +523,12 @@ def eval_fragment_messages(desc, fragment_schema, skeleton_text, repo_root, eval
     # fixture copy or a drop-in root renders a different header by construction.
     inside = Path(desc.path).resolve().is_relative_to(Path(repo_root).resolve())
     if eval_sync and inside:
-        config = generate_eval_config.config_path(desc, repo_root)
+        try:
+            config = generate_eval_config.config_path(desc, repo_root)
+        except generate_eval_config.GenerateError as exc:
+            # A descriptor without eval.config: the schema gate already reports the missing
+            # field; this gate says why the sync could not run instead of crashing the run.
+            return [f"eval config cannot be compared: {exc}"]
         committed = config.read_text(encoding="utf-8") if config.is_file() else None
         if committed != rendered:
             return [
