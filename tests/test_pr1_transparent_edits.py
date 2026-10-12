@@ -1003,6 +1003,22 @@ class TestLintHooks:
         assert any("requirements-dev.txt" in (r or "") for r in runs[:i_fmt])
 
 
+class TestEvalWorkflow:
+    """AISDLC-209: the eval trigger sends a type name and rfe-creator-eval reads eval.config from
+    that type's descriptor. Pins the shape the GitLab side relies on."""
+
+    def test_type_is_free_text_and_sent_as_eval_type(self):
+        text = _read(".github/workflows/rfe-creator-eval.yml")
+        wf = yaml.safe_load(text)
+        inputs = wf[True]["workflow_dispatch"]["inputs"]  # PyYAML reads the `on:` key as True
+        assert inputs["type"]["type"] == "string"
+        assert inputs["type"]["required"] is True
+        assert "options" not in inputs["type"]
+        assert "eval_config" not in inputs
+        assert '"variables[EVAL_TYPE]=${EVAL_TYPE}"' in text
+        assert "variables[EVAL_CONFIG]" not in text
+
+
 class TestDocs:
     @pytest.mark.parametrize("doc", ["AGENTS.md", "CLAUDE.md", "README.md"])
     def test_points_at_types_readme_and_scripts(self, doc):

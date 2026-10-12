@@ -81,7 +81,7 @@ case and at least four `revision-expected`-tagged weak-draft cases (each an hone
 scope gap the create step cannot repair, so the first review fails and the revise path runs — see
 "Weak-draft cases" in `eval/README.md`; without them the `revision_coverage` gate passes only by
 accident), populated `expected_*` annotations, explicit `eval.thresholds`, the committed eval
-config, one QUICK_MODE run on the PR, and a seed for the tracker emulator.
+config, one QUICK_MODE run on the PR with `type=<name>`, and a seed for the tracker emulator.
 
 Rules that are easy to trip:
 
