@@ -137,7 +137,8 @@ def recorded_parent_key(desc, issue_key, fields):
     (``RHOAIENG`` for an Initiative) is NOT written; it stays in Jira, where split children
     inherit it directly (``split_submit.discover_state``) and the alignment stage skips with
     its ``not_assessed`` stub exactly as today. A parent carrying a prefix but failing the
-    grammar is not written either (the schema would refuse it and fail the whole fetch).
+    grammar is not written either: the caller prints the ``Note:`` and the fetch continues
+    (writing it would have the schema refuse the frontmatter and fail the whole fetch).
     """
     prefixes = parent_key_prefixes(desc)
     parent = fields.get(PARENT_FIELD)
