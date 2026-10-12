@@ -1765,8 +1765,12 @@ def launch_vars(desc, stage):
         (
             "PARENT_KEY_SET",
             (
-                f" parent_key=<parent.key, only when it starts with {' or '.join(parent_prefixes)};"
-                " omit the field otherwise>"
+                # Quoted, and the grammar spelled out: the key is Jira-supplied text that the
+                # agent pastes into a shell command (CodeRabbit on #222) — the prefix test alone
+                # would let a crafted value smuggle extra assignments past frontmatter.py.
+                f' parent_key="<parent.key, only when it starts with {" or ".join(parent_prefixes)}'
+                " and is a plain Jira key (capital letters, a hyphen, digits only);"
+                ' omit the field otherwise>"'
             )
             if parent_prefixes
             else "",

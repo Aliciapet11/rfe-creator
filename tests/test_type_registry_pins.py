@@ -2598,9 +2598,12 @@ class TestSkillLayer:
         )
         (set_line,) = [ln for ln in lines if "frontmatter.py set" in ln]
         if parent_prefixes:
+            # Quoted and grammar-checked: the agent pastes a Jira-supplied key into a shell
+            # command, so a prefix test alone is not enough (CodeRabbit on #222).
             assert set_line.endswith(
-                f"tracker_ref={{KEY}} parent_key=<parent.key, only when it starts with "
-                f"{' or '.join(parent_prefixes)}; omit the field otherwise>"
+                f'tracker_ref={{KEY}} parent_key="<parent.key, only when it starts with '
+                f"{' or '.join(parent_prefixes)} and is a plain Jira key (capital letters, a "
+                'hyphen, digits only); omit the field otherwise>"'
             ), set_line
         else:
             # byte-stable for a type without the condition: nothing about a parent anywhere

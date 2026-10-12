@@ -3196,8 +3196,8 @@ class TestLaunchVars:
         assert rfe["PARENT_FIELD"] == "" and rfe["PARENT_KEY_SET"] == ""
         assert init["PARENT_FIELD"] == ',"parent"'
         assert init["PARENT_KEY_SET"] == (
-            " parent_key=<parent.key, only when it starts with RHAISTRAT-; "
-            "omit the field otherwise>"
+            ' parent_key="<parent.key, only when it starts with RHAISTRAT- and is a plain Jira'
+            ' key (capital letters, a hyphen, digits only); omit the field otherwise>"'
         )
         assert init["DIMENSION_ALIGNMENT_CONDITION"] == "parent_key startswith RHAISTRAT-"
         assert init["DIMENSION_ALIGNMENT_BLOCKING"] == "false"
