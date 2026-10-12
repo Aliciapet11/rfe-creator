@@ -7,7 +7,8 @@
 #   GITLAB_TRIGGER_URL    — https://gitlab.com/api/v4/projects/<project-id>/trigger/pipeline
 #
 # Manually triggered by a maintainer from the Actions tab. Enter the PR
-# number to evaluate. Only users with write access can run this workflow.
+# number to evaluate and the work item type (default rfe). Only users with
+# write access can run this workflow.
 #
 # The GitLab pipeline posts eval results back to the PR as a comment.
 # GITHUB_TOKEN is used by the GitLab pipeline for posting — it is configured
@@ -28,6 +29,7 @@ on:
       # edit here.
       type:
         description: "Work item type to evaluate (rfe, initiative, or any types/<name> in the PR)"
+        required: true
         type: string
         default: rfe
       quick_mode:
