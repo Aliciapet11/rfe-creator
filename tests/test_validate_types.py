@@ -16,6 +16,7 @@ design's "extra types" CI test (a drop-in third type discovered by the registry 
 passing every gate-1 check).
 """
 
+import copy
 import json
 import os
 import re
@@ -534,6 +535,31 @@ class TestPerTypeGate:
         report = _validate(types_copy)
         _assert_finding(report, "eval.dataset: path not found: eval/nope/cases", "rfe")
         _assert_finding(report, "eval.config: file not found: eval-nope.yaml", "rfe")
+
+    def test_missing_eval_config_key_is_a_finding_not_a_crash(self, types_copy):
+        """A descriptor without eval.config (a required field) fails through the report: the
+        schema finding, and — for the shipped descriptor, the only one the eval-sync gate
+        compares — the gate saying why it could not compare. Before, the sync gate raised the
+        registry's KeyError out of the generator's config_path and the CLI exited 1 with a
+        traceback instead of the findings (noticed on rfe-creator #217)."""
+        _mutate(types_copy, "initiative", lambda d: d["eval"].pop("config"))
+        report = _validate(types_copy, eval_sync=True)
+        assert not report.ok
+        _assert_finding(report, "'config' is a required property", "initiative")
+        # The sync comparison only runs for a descriptor inside the repo root, so take the
+        # shipped one's data and path, minus the field.
+        shipped = type_registry.load(root=TYPES_ROOT, extra_roots=[], env={}).get("initiative")
+        data = copy.deepcopy(shipped.data)
+        data["eval"].pop("config")
+        desc = type_registry.Descriptor("initiative", data, path=shipped.path)
+        skeleton = (REPO_ROOT / "eval/config/skeleton.yaml").read_text(encoding="utf-8")
+        messages = validate_types.eval_fragment_messages(
+            desc, None, skeleton, REPO_ROOT, eval_sync=True
+        )
+        assert len(messages) == 1, messages
+        assert messages[0].startswith(
+            "eval config cannot be compared: initiative: descriptor has no 'eval.config'"
+        ), messages
 
     def test_references_resolve_against_repo_root_not_cwd(self, types_copy, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)  # no .claude/, eval.yaml, ... here
