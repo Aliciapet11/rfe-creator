@@ -46,7 +46,7 @@ conventions:
     needs_attention: initiative-needs-attention         # submit.py:281,:336,:727; split_submit.py:656
     auto_created: initiative-auto-created               # submit.py:723; split_submit.py:637 (Q11: emitted, first-class)
     auto_revised: initiative-auto-revised               # submit.py:725; split_submit.py:654 (Q11)
-    opt_in: initiative-autofix-opt-in                   # AISDLC-205 (D1): production selects only Initiatives carrying it — read by rfe-autofixer's selection JQL and strat-creator's intake (AISDLC-301); no rfe-creator script reads it; absent for rfe (every RFE is in scope)
+    opt_in: initiative-autofix-opt-in                   # AISDLC-205 (D1): production selects only Initiatives carrying it — the single source rfe-autofixer's selection JQL (a job variable today; MR !22 reads this when it is empty) and strat-creator's intake (AISDLC-301, planned) should read; no rfe-creator script reads it; absent for rfe (every RFE is in scope)
     split_result: initiative-split-result               # split_submit.py:638 (Q11)
     split_original: initiative-split-original           # split_submit.py:807 (dry-run text), :813 (Q11)
     feasibility:                                        # submit.py:109-113 (values); split_submit.py:161-166 (composed); key order == initiative-review feasibility enum
