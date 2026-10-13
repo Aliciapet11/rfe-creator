@@ -360,6 +360,7 @@
         "auto_revised": { "$ref": "#/$defs/label", "description": "Set when the tool revised the body before submit. Default <prefix>-auto-revised." },
         "split_result": { "$ref": "#/$defs/label", "description": "Set on split children. Default <prefix>-split-result." },
         "split_original": { "$ref": "#/$defs/label", "description": "Set on a split parent when it is closed. Default <prefix>-split-original." },
+        "opt_in": { "$ref": "#/$defs/label", "description": "Opt-in label: when present, production selects only items carrying it; its readers (the autofixer's selection JQL, any downstream intake) should take it from the registry — type_registry.py get <type> conventions.labels.opt_in — rather than copy the string. Absent = every item of the type is in scope. Initiative: initiative-autofix-opt-in (AISDLC-205). No rfe-creator script reads it." },
         "feasibility": {
           "type": "object",
           "required": ["feasible", "infeasible", "indeterminate"],

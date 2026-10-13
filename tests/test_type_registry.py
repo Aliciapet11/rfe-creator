@@ -469,6 +469,15 @@ class TestDescriptorProjections:
         assert not any(isinstance(v, dict) for v in labels.values())
         assert "alignment.strong" not in labels  # rfe has no alignment dimension
 
+    def test_opt_in_label_is_a_registry_value_for_the_initiative_only(self):
+        """AISDLC-205: the Initiative opt-in label is one registry value that the autofixer's
+        selection JQL and strat-creator's intake should read instead of copying the string;
+        every RFE is in scope, so the rfe descriptor carries no such key."""
+        reg = _shipped()
+        assert reg.get("initiative").get("conventions.labels.opt_in") == "initiative-autofix-opt-in"
+        with pytest.raises(KeyError):
+            reg.get("rfe").get("conventions.labels.opt_in")
+
     def test_labels_nested_form_stays_reachable(self):
         desc = _shipped().get("initiative")
         assert desc.labels["alignment.strong"] == "initiative-alignment-strong"
