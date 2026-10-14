@@ -26,6 +26,11 @@ execution:
     JIRA_TOKEN: ""
 
 models:
+  # Judges on Anthropic's Opus through OpenRouter: the whole run needs only
+  # OPENROUTER_API_KEY, judge spend is priced inline (the report's Judge Cost row),
+  # and every open-weights run under this layer is scored by the same judge.
+  # Baselines judged by an older Opus are not directly comparable; re-judge first.
+  judge: openrouter:/anthropic/claude-opus-5.5
   providers:
     openrouter:
       budget:

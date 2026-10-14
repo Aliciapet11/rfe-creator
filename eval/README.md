@@ -128,9 +128,9 @@ does the routing: no proxy to start, no hook, nothing to reconcile afterwards.
 ### Run
 
 ```bash
-export OPENROUTER_API_KEY=sk-or-...        # the additional variable for OpenRouter (agent only)
+export OPENROUTER_API_KEY=sk-or-...        # the one variable the run needs: agent and judges
 
-# A full run still needs the ambient Anthropic/Vertex credentials: the judges stay on Opus.
+# The judges call Anthropic's Opus through OpenRouter too, so no Anthropic/Vertex credentials are needed.
 /eval-run --config eval-profiles/openrouter-glm-5.2.yaml
 /eval-run --config eval-profiles/openrouter-glm-5.2.yaml \
     --cases case-001-model-signature-verification-at-serving --no-llm-judges   # smoke test: one case, no judge, OpenRouter key only
@@ -144,7 +144,9 @@ export OPENROUTER_API_KEY=sk-or-...        # the additional variable for OpenRou
 shared layer (`openrouter.yaml`) that itself `extends: ../eval.yaml`. A profile is a few
 lines — the two roles, the timeout, the MLflow experiment, the extra permissions weaker
 models need — so the dataset, the judges and the thresholds cannot drift from the Anthropic
-baseline. The judge stays on the ambient Anthropic/Vertex Opus. Inspect a merged profile
+baseline. The judges run on Anthropic's Opus through OpenRouter
+(`openrouter:/anthropic/claude-opus-5.5`), priced inline, so one key covers the whole run and
+the report's Judge Cost row is a real figure. Inspect a merged profile
 with `python3 -m agent_eval.config --print eval-profiles/openrouter-glm-5.2.yaml` (harness
 on `PYTHONPATH`); the run records the chain in `run_result.json` under
 `eval_params.config_chain`.

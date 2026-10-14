@@ -9,6 +9,8 @@ the harness, and they pin the properties the migration off the LiteLLM proxy rel
 
 * every profile chains back to the generated ``eval.yaml`` and a model profile merges to an
   ``openrouter:/`` skill AND subagent (a mixed pair fails the harness's provider-kind check);
+  the shared layer puts the judges on Anthropic's Opus through OpenRouter, so one key covers
+  the whole run;
 * the merged allow list is exactly the base's (``Skill``, ``Agent``, the tmp Edit rule): no
   profile adds a blanket interpreter rule — the harness's absolute-workspace twins of the
   project's script rules cover the absolute-path calls weaker models make;
@@ -121,6 +123,7 @@ def _bare_slug(uri):
 LAYERS = [PROFILES_DIR / "openrouter.yaml", PROFILES_DIR / "openrouter-sandboxed.yaml"]
 MODEL_PROFILES = [p for p in PROFILES if merged(p)[0]["models"]["skill"].startswith("openrouter:/")]
 BASE_ALLOW = ["Skill", "Agent", "Edit(tmp/rfe-assess/**)"]
+JUDGE = "openrouter:/anthropic/claude-opus-5.5"
 
 
 def test_profiles_exist_next_to_the_shared_layer():
@@ -142,19 +145,18 @@ def test_model_profile_puts_skill_and_subagent_on_openrouter(profile):
     models = cfg["models"]
     assert models["skill"].startswith("openrouter:/"), models["skill"]
     assert models["subagent"].startswith("openrouter:/"), models["subagent"]
-    assert not models["judge"].startswith("openrouter:/"), (
-        "the judge stays on the ambient Anthropic"
-    )
+    assert models["judge"] == JUDGE, "judges on Anthropic's Opus through OpenRouter (one key)"
     assert _bare_slug(models["skill"]) == _bare_slug(models["subagent"])
 
 
 @pytest.mark.parametrize("layer", LAYERS, ids=lambda p: p.name)
-def test_shared_layer_alone_keeps_the_anthropic_roles(layer):
+def test_shared_layer_keeps_the_agent_roles_and_puts_the_judge_on_openrouter(layer):
     cfg, _ = merged(layer)
     base = _load(REPO / "eval.yaml")
-    assert {k: cfg["models"][k] for k in ("skill", "subagent", "judge")} == {
-        k: base["models"][k] for k in ("skill", "subagent", "judge")
+    assert {k: cfg["models"][k] for k in ("skill", "subagent")} == {
+        k: base["models"][k] for k in ("skill", "subagent")
     }
+    assert cfg["models"]["judge"] == JUDGE
 
 
 @pytest.mark.parametrize("profile", PROFILES, ids=lambda p: p.name)
