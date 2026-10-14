@@ -16,7 +16,8 @@ execution:
   # REAL dollars per run (batch mode = one invocation). The CLI's own cap is this
   # value x cli_budget_inflation (50), because Claude Code meters an Anthropic-priced
   # estimate 2-60x above the OpenRouter charge; the real pool is budget.run_usd below.
-  max_budget_usd: 30.0
+  # A full 20-case GLM 5.2 run came to $31.25 real (2026-10-11): $30 stopped it $1.25 short.
+  max_budget_usd: 60.0
   env:
     # The eval runs --dry-run, but a weaker model can ignore that and call
     # submit.py against the real Jira. Blank the write creds so any such write
@@ -34,7 +35,14 @@ models:
   providers:
     openrouter:
       budget:
-        run_usd: 30.0     # whole-run real-dollar pool: flagged at audit, enforced in flight at key-guardrail
+        run_usd: 60.0     # whole-run real-dollar pool: flagged at audit, enforced in flight at key-guardrail
+      # Opus 5.5 is capped at 20 requests a minute on a new OpenRouter account. The harness
+      # retries a 429 honouring Retry-After, but its defaults (4 concurrent judge calls,
+      # 3 retries of at most 30 s each) can burn every retry inside one window and fail the
+      # judge. Two at a time with eight retries rides the cap out instead of racing it.
+      judge:
+        concurrency: 2
+        max_retries: 8
       # How the pins in eval.yaml are enforced. This is the place to switch it (not the
       # skeleton: key-guardrail is validated against budget.run_usd, which lives here).
       #   audit          pins checked before the first request and audited after it; NOT

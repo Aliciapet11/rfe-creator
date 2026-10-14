@@ -274,6 +274,10 @@ def test_profile_chooses_a_valid_enforcement_next_to_the_budget(profile):
     assert enforcement in ("audit", "key-guardrail")
     assert block["routing"]["policy"] in ("strict", "warn")
     assert block["budget"]["run_usd"] > 0, "key-guardrail needs it and audit flags against it"
+    # Opus 5.5 is capped at 20 req/min on a new OpenRouter account: the shared layer keeps
+    # the judges under it rather than racing it with the harness defaults (4 x 3 retries).
+    judge = block["judge"]
+    assert judge["concurrency"] <= 2 and judge["max_retries"] >= 6, judge
 
 
 def test_merge_helper_honours_replace_so_a_dropped_allow_list_cannot_pass(tmp_path):

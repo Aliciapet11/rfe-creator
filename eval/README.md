@@ -146,7 +146,14 @@ lines — the two roles, the timeout, the MLflow experiment, the extra permissio
 models need — so the dataset, the judges and the thresholds cannot drift from the Anthropic
 baseline. The judges run on Anthropic's Opus through OpenRouter
 (`openrouter:/anthropic/claude-opus-5.5`), priced inline, so one key covers the whole run and
-the report's Judge Cost row is a real figure. Inspect a merged profile
+the report's Judge Cost row is a real figure. They run two at a time with eight retries
+(`providers.openrouter.judge` in the shared layer): a new OpenRouter account caps Opus 5.5 at
+20 requests a minute, and the harness's default of four concurrent calls with three retries
+can exhaust its retries inside one window. Anthropic also rejects a forced tool call
+(`tool_choice` `tool`/`any`) for Opus 5.5 through OpenRouter: a harness without
+[agent-eval-harness#250](https://github.com/opendatahub-io/agent-eval-harness/pull/250)
+fails every LLM judge on this profile with a 400 instead of stepping down to `auto`.
+Inspect a merged profile
 with `python3 -m agent_eval.config --print eval-profiles/openrouter-glm-5.2.yaml` (harness
 on `PYTHONPATH`); the run records the chain in `run_result.json` under
 `eval_params.config_chain`.
