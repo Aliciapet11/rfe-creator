@@ -689,6 +689,32 @@ class TestParentKeyForwarding:
         parent = jira.get(issues[0]["key"])["fields"].get("parent")
         assert parent and parent["key"] == "RHAISTRAT-1234"
 
+    TASK_WITH_OUTCOME_PARENT = (
+        "---\ninitiative_id: INIT-003\ntitle: Test Initiative\n"
+        "priority: Major\nstatus: Ready\nparent_key: RHOAIENG-123\n---\n\nBody.\n"
+    )
+
+    def test_same_project_outcome_parent_is_forwarded(self, art_dir, jira):
+        """An RHOAIENG Outcome above a new Initiative is a hierarchy link, not a split. Before
+        the fix the ancestor walk took any tracker-owned parent key for a Jira split ancestor,
+        so such a batch-created Initiative was in no plan: not a split parent for Phase 1,
+        excluded from Phase 2, never created — and the run ended green."""
+        jira.create("RHOAIENG-123", "Outcome", "Outcome body.", issue_type="Outcome")
+        _write(f"{art_dir}/initiatives/INIT-003.md", self.TASK_WITH_OUTCOME_PARENT)
+        _write(f"{art_dir}/initiative-reviews/INIT-003-review.md", _review("INIT-003"))
+
+        r = _run_submit(art_dir, jira.url, ["--dry-run"])
+        assert r.returncode == 0, r.stderr
+        assert "Would create RHOAIENG Initiative: Test Initiative" in r.stdout
+
+        r = _run_submit(art_dir, jira.url)
+        assert r.returncode == 0, r.stderr
+        assert "is not in Jira" not in r.stdout
+        created = [i for i in jira.search("project = RHOAIENG") if i["key"] != "RHOAIENG-123"]
+        assert len(created) == 1
+        parent = jira.get(created[0]["key"])["fields"].get("parent")
+        assert parent and parent["key"] == "RHOAIENG-123"
+
     def test_local_parent_is_not_forwarded(self, art_dir, jira):
         """INIT- parent → dropped, Initiative created standalone."""
         _write(f"{art_dir}/initiatives/INIT-002.md", self.TASK_WITH_LOCAL_PARENT)
