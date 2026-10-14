@@ -190,8 +190,12 @@ def test_no_config_authors_the_managed_transport_env_or_a_key(path):
 def test_profile_blanks_the_jira_write_credentials_and_little_else(profile):
     cfg, _ = merged(profile)
     env = cfg["execution"]["env"]
+    base_env = _load(REPO / "eval.yaml")["execution"].get("env") or {}
     assert env["JIRA_USER"] == "" and env["JIRA_TOKEN"] == ""
-    assert set(env) <= {"JIRA_USER", "JIRA_TOKEN", "RFE_SKIP_BOOTSTRAP"}, env
+    # The base's own entries (the compaction-recovery hook switch) survive the merge;
+    # the profiles add only the Jira blanks and the sandbox layer's bootstrap skip.
+    assert {k: env[k] for k in base_env} == base_env
+    assert set(env) <= set(base_env) | {"JIRA_USER", "JIRA_TOKEN", "RFE_SKIP_BOOTSTRAP"}, env
 
 
 def test_sandboxed_layer_locks_bash_egress_and_hides_the_key():
