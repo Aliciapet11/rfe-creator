@@ -245,8 +245,32 @@ class TestSkipLogic:
         assert "RFE-003" in stdout
 
     def test_children_of_jira_parent_excluded(self, art_dir):
-        """Children of RHAIRFE parent → excluded from Phase 2 (Phase 1 handles)."""
-        # Child with Jira parent_key
+        """Children of a split RHAIRFE parent → excluded from Phase 2 (Phase 1 owns the tree).
+
+        The archived parent task in the workspace is what marks the tree as a split; its review
+        carries the wave-stall marker so Phase 1 skips it without a Jira call. Before the
+        batch-created-Initiative fix this test omitted the parent task and still expected the
+        exclusion — which is exactly the shape that silently dropped a new Initiative under an
+        RHOAIENG Outcome. A standalone RFE keeps Phase 2 busy.
+        """
+        _write(
+            f"{art_dir}/rfe-tasks/RHAIRFE-1234.md",
+            "---\nrfe_id: RHAIRFE-1234\ntitle: Parent RFE\npriority: Major\n"
+            "status: Archived\n---\n\nParent content.\n",
+        )
+        stalled = (
+            "split_not_attempted: wave stalled in SPLIT: no agent reached a terminal state for"
+            " 1800s (window 1800s); the subagent produced no output"
+        )
+        _write(
+            f"{art_dir}/rfe-reviews/RHAIRFE-1234-review.md",
+            "---\nrfe_id: RHAIRFE-1234\nscore: 6\npass: false\nrecommendation: split\n"
+            "feasibility: feasible\nauto_revised: false\nneeds_attention: true\n"
+            f'needs_attention_reason: "Agent failed: {stalled}"\nerror: "{stalled}"\n'
+            "scores:\n  what: 2\n  why: 2\n  open_to_how: 1\n  not_a_task: 1\n  right_sized: 0\n"
+            "---\n\nToo big.\n",
+        )
+        # Child with the Jira parent_key
         _write(
             f"{art_dir}/rfe-tasks/RFE-002.md",
             TASK_FM.format(rfe_id="RFE-002").replace(
@@ -257,10 +281,18 @@ class TestSkipLogic:
             f"{art_dir}/rfe-reviews/RFE-002-review.md",
             REVIEW_FM.format(rfe_id="RFE-002", auto_revised="false"),
         )
+        # Standalone RFE so Phase 2 runs (rc == 0)
+        _write(f"{art_dir}/rfe-tasks/RFE-020.md", TASK_FM.format(rfe_id="RFE-020"))
+        _write(
+            f"{art_dir}/rfe-reviews/RFE-020-review.md",
+            REVIEW_FM.format(rfe_id="RFE-020", auto_revised="false"),
+        )
 
         stdout, stderr, rc = _run_submit(art_dir)
-        assert rc == 1
-        assert "No submittable" in stderr or "No RFE task" in stderr
+        assert rc == 0, stderr
+        assert "SKIP split-submit" in stdout
+        assert "RFE-020" in stdout
+        assert "RFE-002" not in stdout
 
     def test_grandchildren_of_jira_parent_excluded(self, art_dir):
         """Grandchildren via local intermediary → excluded from Phase 2.

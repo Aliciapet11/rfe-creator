@@ -561,11 +561,13 @@ parent_key - ...`, never fatal) and left in Jira:
 - **A parent in the type's own key family — an RHOAIENG Outcome above an Initiative** (15 open
   Initiatives carried one when this landed). Deliberately not written, although
   `conventions.parent_key_patterns` admits `RHOAIENG-\d+`: in the artifact model a same-family
-  `parent_key` means "split from" — `submit.py` keeps such a task out of Phase 2 as the child of a
-  Jira ancestor (`_has_jira_ancestor`, whose `_owned_key` is the effective key-prefix test) and the
-  run report lists it under that parent (`child_parent_prefixes`: the local and tracker prefixes,
-  deliberately not `parent_key_patterns`) — so recording it would stop the Initiative being updated,
-  labelled or marked processed, and misreport it as a split child. Nothing is lost: the Outcome link
+  `parent_key` means "split from" to the run report, which lists such a task under that parent
+  (`child_parent_prefixes`: the local and tracker prefixes, deliberately not `parent_key_patterns`),
+  so recording it would misreport a fetched Initiative as a split child. (`submit.py` no longer
+  drops it: since the batch-created-Initiative fix, `_has_jira_ancestor` counts a chain as a split
+  tree only when it passes through an archived task in the workspace — the split skill's trace — so
+  a Jira parent with no task here is a hierarchy link, forwarded as Jira's `parent` on create and
+  ignored on update.) Nothing is lost: the Outcome link
   stays in Jira (`submit.py` never writes `parent` on an update), split children inherit it from
   Jira directly (`split_submit.discover_state` reads the parent's `fields.parent`), and the alignment
   stage — RHAISTRAT-only by its condition — skips with its stub exactly as it did before 280. A field

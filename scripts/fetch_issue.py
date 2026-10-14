@@ -131,9 +131,9 @@ def recorded_parent_key(desc, issue_key, fields):
     Recorded when the key carries one of ``parent_key_prefixes(desc)`` AND matches the type's
     ``parent_key`` grammar; both ``None`` for a type without prefixes or an issue without a
     parent. A parent outside the prefixes is the documented decision (types/README.md "Parent
-    field"): the artifact model's ``parent_key`` means "split from" for a key of the type's own
-    family — ``submit.py`` keeps such a task out of Phase 2 as a split child of a Jira ancestor
-    and the run report lists it under that parent — so a same-project Outcome parent
+    field"): to the run report a ``parent_key`` of the type's own family means "split from" (it
+    lists such a task under that parent; ``submit.py`` itself only treats a chain through an
+    archived task in the workspace as a split tree) — so a same-project Outcome parent
     (``RHOAIENG`` for an Initiative) is NOT written; it stays in Jira, where split children
     inherit it directly (``split_submit.discover_state``) and the alignment stage skips with
     its ``not_assessed`` stub exactly as today. A parent carrying a prefix but failing the

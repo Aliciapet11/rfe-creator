@@ -1048,11 +1048,27 @@ def main():
             _parent_of[data[id_field]] = pk
 
     def _has_jira_ancestor(item_id):
-        """True if item_id descends from any Jira-keyed parent."""
+        """True if ``item_id`` belongs to a split tree rooted in Jira — the trees Phase 1
+        submits, so Phase 2 must leave them alone.
+
+        Walking ``parent_key`` upwards, the chain must reach a Jira-keyed ancestor AND pass
+        through a split parent on the way: a task present in this workspace with status
+        ``Archived``, which is what the split skill leaves behind for the parent it decomposed
+        (a Jira parent split in this run, or a local draft split before submit whose own
+        parent is in Jira). A ``parent_key`` that names a Jira issue with no task here is not
+        a split: a batch entry's RHOAIENG Outcome above a new Initiative, say, is a hierarchy
+        link the create step forwards as Jira's ``parent``. Before this rule such a task was in
+        no plan at all — not a split parent for Phase 1, excluded from Phase 2 — and a batch
+        run ended green without ever creating it.
+        """
         seen = set()
         pk = _parent_of.get(item_id)
+        through_split_parent = False
         while pk and pk not in seen:
-            if _existing_key(pk):
+            parent_data = tasks_by_id.get(pk)
+            if parent_data is not None and parent_data.get("status") == "Archived":
+                through_split_parent = True
+            if through_split_parent and _existing_key(pk):
                 return True
             seen.add(pk)
             pk = _parent_of.get(pk)
